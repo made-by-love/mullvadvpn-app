@@ -23,6 +23,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private let simulatorTunnelProvider = SimulatorTunnelProviderHost()
     #endif
 
+    private lazy var occlusionWindow: UIWindow = {
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = LaunchViewController()
+        window.windowLevel = .alert + 1
+        return window
+    }()
+
     private var rootContainer: RootContainerViewController?
     private var splitViewController: CustomSplitViewController?
     private var selectLocationViewController: SelectLocationViewController?
@@ -69,9 +76,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window = UIWindow(frame: UIScreen.main.bounds)
 
         // Set an empty view controller while loading tunnels
-        let launchController = UIViewController()
-        launchController.view.backgroundColor = .primaryColor
-        self.window?.rootViewController = launchController
+        self.window?.rootViewController = LaunchViewController()
 
         // Add relay cache observer
         RelayCache.Tracker.shared.addObserver(self)
@@ -132,6 +137,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Start periodic private key rotation
         TunnelManager.shared.startPeriodicPrivateKeyRotation()
+
+        // Reveal application content
+        occlusionWindow.isHidden = true
+        window?.makeKeyAndVisible()
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -140,6 +149,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Stop periodic private key rotation
         TunnelManager.shared.stopPeriodicPrivateKeyRotation()
+
+        // Hide application content
+        occlusionWindow.makeKeyAndVisible()
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
